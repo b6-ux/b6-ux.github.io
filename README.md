@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -237,11 +237,35 @@
   .empty .ei{font-size:48px;margin-bottom:12px;opacity:0.4;}
   .empty .et{font-size:14px;line-height:1.5;}
   .hidden{display:none;}
+
+  /* PSEUDO MODAL */
+  .pseudo-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(12px);}
+  .pseudo-modal{background:var(--panel);border:2px solid var(--violet2);border-radius:20px;padding:40px 28px;text-align:center;width:90%;max-width:360px;box-shadow:0 0 80px rgba(124,58,237,0.6);position:relative;overflow:hidden;animation:mPop 0.5s cubic-bezier(0.22,1,0.36,1);}
+  .pseudo-modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--violet),var(--violet2),var(--cyan),var(--violet2),var(--violet));animation:gm 2s linear infinite;background-size:200%;}
+  .pseudo-ic{font-size:56px;margin-bottom:16px;filter:drop-shadow(0 0 20px var(--violet2));}
+  .pseudo-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:2px;}
+  .pseudo-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+  .pseudo-input{width:100%;background:var(--panel2);border:2px solid var(--border);border-radius:10px;padding:14px 16px;color:#fff;font-family:'Orbitron',monospace;font-size:15px;font-weight:700;outline:none;transition:border-color 0.2s;text-align:center;letter-spacing:2px;margin-bottom:16px;text-transform:uppercase;}
+  .pseudo-input:focus{border-color:var(--violet2);box-shadow:0 0 15px rgba(124,58,237,0.3);}
+  .pseudo-input::placeholder{color:var(--muted);font-size:13px;letter-spacing:1px;text-transform:none;}
+  .pseudo-err{font-size:12px;color:var(--red);margin-bottom:12px;min-height:16px;}
 </style>
 </head>
 <body>
 <canvas id="particles"></canvas>
 <div class="toast" id="toast"></div>
+
+<!-- PSEUDO MODAL (première connexion) -->
+<div class="pseudo-modal-ov" id="pseudoModal">
+  <div class="pseudo-modal">
+    <div class="pseudo-ic">⚔️</div>
+    <div class="pseudo-title">CHOISIR TON NOM</div>
+    <div class="pseudo-sub">Bienvenue, chasseur.<br>Choisis ton identifiant de joueur.</div>
+    <input class="pseudo-input" id="pseudoInput" maxlength="20" placeholder="Ton pseudo ici..." autocomplete="off" spellcheck="false">
+    <div class="pseudo-err" id="pseudoErr"></div>
+    <button class="btn bp" onclick="confirmPseudo()">⚡ COMMENCER L'AVENTURE</button>
+  </div>
+</div>
 
 <!-- LEVEL UP MODAL -->
 <div class="modal-ov" id="luModal">
@@ -268,7 +292,7 @@
     <div class="player-row">
       <div class="avatar">🧑‍🦱</div>
       <div class="player-info">
-        <div class="player-name">SHADOW_HUNTER</div>
+        <div class="player-name" id="playerNameDisplay">SHADOW_HUNTER</div>
         <div class="player-level">NIVEAU <span id="pLvl">1</span> • <span id="tXP">0</span> XP TOTAL</div>
         <div class="xp-bar-bg"><div class="xp-bar" id="xpBar"></div></div>
         <div class="xp-text"><span id="cXP">0</span> / <span id="xpNext">100</span> XP → Niveau <span id="nLvl">2</span></div>
@@ -432,10 +456,10 @@
       <div class="lb-item"><div class="lb-rank r2">2</div><div class="lb-av">🐺</div><div style="flex:1"><div class="lb-nm">DARK_BLADE</div><div class="lb-rb">RANG S • Niveau 38</div></div><div class="lb-xp">21,890 XP</div></div>
       <div class="lb-item"><div class="lb-rank r3">3</div><div class="lb-av">🦊</div><div style="flex:1"><div class="lb-nm">PHANTOM_X</div><div class="lb-rb">RANG A • Niveau 29</div></div><div class="lb-xp">15,670 XP</div></div>
       <div style="text-align:center;padding:8px 0;color:var(--muted);font-size:12px;">• • •</div>
-      <div class="lb-item me"><div class="lb-rank" style="color:var(--violet2)">—</div><div class="lb-av">🧑‍🦱</div><div style="flex:1"><div class="lb-nm">SHADOW_HUNTER <span style="color:var(--violet2);font-size:11px">(Toi)</span></div><div class="lb-rb">RANG <span id="myRk">E</span> • Niveau <span id="myRkLvl">1</span></div></div><div class="lb-xp" id="myRkXP">0 XP</div></div>
+      <div class="lb-item me"><div class="lb-rank" style="color:var(--violet2)">—</div><div class="lb-av">🧑‍🦱</div><div style="flex:1"><div class="lb-nm" id="myLbName">SHADOW_HUNTER <span style="color:var(--violet2);font-size:11px">(Toi)</span></div><div class="lb-rb">RANG <span id="myRk">E</span> • Niveau <span id="myRkLvl">1</span></div></div><div class="lb-xp" id="myRkXP">0 XP</div></div>
       <div class="sec" style="margin-top:20px;">DÉFIS AMIS</div>
       <div class="ch-card">
-        <div class="ch-pl"><div class="ch-av">🧑‍🦱</div><div class="ch-nm">Toi</div><div class="ch-pr" id="myCh">0 séances</div></div>
+        <div class="ch-pl"><div class="ch-av">🧑‍🦱</div><div class="ch-nm" id="myChName">Toi</div><div class="ch-pr" id="myCh">0 séances</div></div>
         <div><div class="ch-vs">VS</div><div style="font-size:10px;color:var(--muted);text-align:center;">EN COURS</div></div>
         <div class="ch-pl"><div class="ch-av">🦊</div><div class="ch-nm">Alex_D</div><div class="ch-pr" style="color:var(--muted)">0 séances</div></div>
       </div>
@@ -445,7 +469,7 @@
     <div class="page" id="page-profil">
       <div class="prof-hdr">
         <div class="prof-av">🧑‍🦱</div>
-        <div class="prof-name">SHADOW_HUNTER</div>
+        <div class="prof-name" id="profName">SHADOW_HUNTER</div>
         <div class="prof-ttl" id="profTtl">⚔️ CHASSEUR NOVICE</div>
         <div style="display:flex;justify-content:center;gap:20px;margin-top:16px;">
           <div style="text-align:center"><div style="font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:var(--violet2)" id="profLvl">1</div><div style="font-size:11px;color:var(--muted)">NIVEAU</div></div>
@@ -495,25 +519,51 @@
 
 <script>
 // ══════════════════════════════════════
-//  STATE — tout à 0
+//  PSEUDO — première connexion
 // ══════════════════════════════════════
-const BASE_XP = 100;
-let G = {
-  lvl:1, cxp:0, xpNext:BASE_XP, txp:0, streak:0,
-  stats:{f:0,e:0,d:0,s:0,r:0},
-  sessions:0, weekSessions:0,
-  weekXP:[0,0,0,0,0,0,0], dayXP:0,
-  quests:{}, wtHistory:[], chestDone:false,
-  x2:false, intMult:1.5, wtType:'muscu',
-  fitConn:false, fitToken:null, fitData:null,
-  fitPendXP:0, fitImported:false, fitHistory:[]
-};
+const DEFAULT_NAME = 'SHADOW_HUNTER';
 
-// ══════════════════════════════════════
-//  RANKS
-// ══════════════════════════════════════
-function rank(l){return l<5?'E':l<10?'D':l<15?'C':l<22?'B':l<30?'A':l<40?'S':l<50?'SS':'SSS';}
-function rankTitle(r){return{E:'Chasseur Novice',D:'Chasseur Rang D',C:'Chasseur Rang C',B:'Chasseur Expérimenté',A:'Chasseur Élite',S:'Chasseur Légendaire',SS:'Ombre Puissante',SSS:'Shadow Monarch'}[r]||'Chasseur';}
+function initPseudo(){
+  const saved = localStorage.getItem('playerName');
+  if(saved){
+    applyPseudo(saved);
+    document.getElementById('pseudoModal').style.display='none';
+  } else {
+    // Affiche le modal, focus sur l'input
+    const inp = document.getElementById('pseudoInput');
+    setTimeout(()=>inp.focus(),200);
+    inp.addEventListener('keydown', e=>{ if(e.key==='Enter') confirmPseudo(); });
+  }
+}
+
+function confirmPseudo(){
+  const inp = document.getElementById('pseudoInput');
+  const err = document.getElementById('pseudoErr');
+  let val = inp.value.trim().toUpperCase();
+  if(!val){err.textContent='⚠️ Entre un pseudo valide !';return;}
+  if(val.length < 3){err.textContent='⚠️ Minimum 3 caractères !';return;}
+  if(val.length > 20){err.textContent='⚠️ Maximum 20 caractères !';return;}
+  if(!/^[A-Z0-9_\-]+$/.test(val)){err.textContent='⚠️ Lettres, chiffres, _ et - uniquement !';return;}
+  err.textContent='';
+  localStorage.setItem('playerName', val);
+  applyPseudo(val);
+  // Ferme le modal avec animation
+  const ov = document.getElementById('pseudoModal');
+  ov.style.transition='opacity 0.4s';
+  ov.style.opacity='0';
+  setTimeout(()=>ov.style.display='none',400);
+  showToast('⚡ BIENVENUE, '+val+' !');
+}
+
+function applyPseudo(name){
+  document.getElementById('playerNameDisplay').textContent = name;
+  document.getElementById('profName').textContent = name;
+  // Classement : met à jour le nom sans le badge (Toi)
+  const lbEl = document.getElementById('myLbName');
+  if(lbEl) lbEl.innerHTML = name+' <span style="color:var(--violet2);font-size:11px">(Toi)</span>';
+  const chEl = document.getElementById('myChName');
+  if(chEl) chEl.textContent = name;
+}
 
 // ══════════════════════════════════════
 //  PARTICLES
@@ -533,6 +583,27 @@ function goPage(n,el){
   document.getElementById('page-'+n).classList.add('active');
   el.classList.add('active');
 }
+
+// ══════════════════════════════════════
+//  STATE — tout à 0
+// ══════════════════════════════════════
+const BASE_XP = 100;
+let G = {
+  lvl:1, cxp:0, xpNext:BASE_XP, txp:0, streak:0,
+  stats:{f:0,e:0,d:0,s:0,r:0},
+  sessions:0, weekSessions:0,
+  weekXP:[0,0,0,0,0,0,0], dayXP:0,
+  quests:{}, wtHistory:[], chestDone:false,
+  x2:false, intMult:1.5, wtType:'muscu',
+  fitConn:false, fitToken:null, fitData:null,
+  fitPendXP:0, fitImported:false, fitHistory:[]
+};
+
+// ══════════════════════════════════════
+//  RANKS
+// ══════════════════════════════════════
+function rank(l){return l<5?'E':l<10?'D':l<15?'C':l<22?'B':l<30?'A':l<40?'S':l<50?'SS':'SSS';}
+function rankTitle(r){return{E:'Chasseur Novice',D:'Chasseur Rang D',C:'Chasseur Rang C',B:'Chasseur Expérimenté',A:'Chasseur Élite',S:'Chasseur Légendaire',SS:'Ombre Puissante',SSS:'Shadow Monarch'}[r]||'Chasseur';}
 
 // ══════════════════════════════════════
 //  XP & LEVEL
@@ -872,6 +943,10 @@ function showToast(msg){
 }
 
 // INIT
+render();renderWTHist();updXPEst();initPseudo();
+</script>
+</body>
+</html>
 render();renderWTHist();updXPEst();
 </script>
 </body>
